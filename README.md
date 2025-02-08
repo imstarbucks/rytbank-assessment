@@ -48,3 +48,26 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## 🚀 Future Improvements
+
+1. **Loading States & Skeleton UI**
+
+   - Implement loading indicators or skeleton screens for components that fetch data from APIs, such as transaction history and total bank balance. This will enhance user experience by reducing perceived wait times.
+
+2. **Tab Navigation**
+
+   - Introduce a bottom tab navigation system to allow users to easily switch between different sections of the app, improving accessibility and usability.
+
+3. **Unit & Integration Testing**
+
+   - Implement unit tests to verify API responses and ensure correct data rendering on screens.
+   - Add integration tests to validate the full user journey, including authentication, navigation, and transaction history retrieval.
+
+4. **Secure User Authentication & Session Management**
+
+   - Store authentication tokens securely using **SecureStore** (for Expo) or **AsyncStorage with encryption** instead of cookies, since React Native does not natively support cookies.
+   - Implement session expiration handling to log out inactive users after a set duration, improving security.
+
+5. **Offline Mode Support**
+   - Cache transaction history and bank balance data using **React Query or AsyncStorage**, allowing users to access their data even when offline.
