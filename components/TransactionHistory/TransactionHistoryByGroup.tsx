@@ -1,4 +1,4 @@
-import { TransactionHistoryType } from '@/utils/types';
+import { TransactionHistoryType } from '@/lib/types';
 import { Link, useRouter } from 'expo-router';
 import {
   FlatList,
@@ -11,12 +11,10 @@ import {
 interface TranstionHistoryByGroupProps {
   date: string;
   transactions: TransactionHistoryType[];
-  isAmountVisible: boolean;
 }
 export const TranstionHistoryByGroup = ({
   date,
   transactions,
-  isAmountVisible,
 }: TranstionHistoryByGroupProps) => {
   const router = useRouter();
 
@@ -42,9 +40,9 @@ export const TranstionHistoryByGroup = ({
                     item.type === 'credit' ? 'text-green-500' : 'text-red-500'
                   }
                 >
-                  {` ${item.type === 'credit' ? '+' : '-'} MYR ${
-                    isAmountVisible ? item.amount.toFixed(2) : '****'
-                  }`}
+                  {` ${
+                    item.type === 'credit' ? '+' : '-'
+                  } MYR ${item.amount.toFixed(2)}`}
                 </Text>
               </View>
             </View>

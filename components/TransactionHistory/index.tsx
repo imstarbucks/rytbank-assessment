@@ -1,29 +1,34 @@
 import { useCallback, useEffect, useState } from 'react';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { Eye, EyeClosed } from 'lucide-react-native';
 import {
+  ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { TransactionHistoryType } from '@/utils/types';
-import { transactionHistoryData } from '@/utils/const';
+import { TransactionHistoryType } from '@/lib/types';
+import { transactionHistoryData } from '@/lib/const';
 import { TranstionHistoryByGroup } from './TransactionHistoryByGroup';
-import { useBiometricStore } from '@/store/useBiometricStore';
+import { buttonVariants } from '../ui/LinkButton';
 import { useAuthenticationStore } from '@/store/useAuthenticationStore';
-import { Link } from 'expo-router';
+import { LinkButton } from '../ui/LinkButton';
+import { TotalAmount } from './TotalAmount';
+import { cn } from '@/lib/utils';
 
 export const TransactionHistory = () => {
-  const [isAmountVisible, setIsAmountVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const isCompatible = useBiometricStore((state) => state.isCompatible);
+  const [current, setCurrent] = useState(5);
+  const [data, setData] = useState(transactionHistoryData.slice(0, current));
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
   const isAuthenticated = useAuthenticationStore(
     (state) => state.isAuthenticated
   );
 
-  const groupped = groupTransactionsByDate(transactionHistoryData);
+  const groupped = groupTransactionsByDate(data);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -32,18 +37,22 @@ export const TransactionHistory = () => {
     }, 2000);
   }, []);
 
-  const handleAuthenticateUser = async () => {
-    if (isCompatible) {
-      const authenticate = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to show transactions amount',
-        fallbackLabel: 'Enter passcode',
-      });
+  const loadMoreData = async () => {
+    if (loading || !hasMore) return;
 
-      if (authenticate.success) {
-        setIsAmountVisible(true);
-      } else {
-        setIsAmountVisible(false);
-      }
+    setLoading(true);
+    const newCurrent = current + 5;
+    const newData = transactionHistoryData.slice(0, newCurrent);
+
+    setCurrent((state) => (state += 5));
+
+    setTimeout(() => {
+      setData(newData);
+      setLoading(false);
+    }, 500);
+
+    if (newData.length === transactionHistoryData.length) {
+      setHasMore(false);
     }
   };
 
@@ -53,37 +62,11 @@ export const TransactionHistory = () => {
 
   return (
     <View>
-      <TouchableOpacity
-        className="w-full rounded-lg px-4 py-2 border border-white my-6 flex flex-row justify-center items-center gap-x-3"
-        onPress={() => {
-          if (!isAmountVisible) {
-            handleAuthenticateUser();
-            return;
-          }
-
-          setIsAmountVisible(false);
-        }}
-      >
-        {isAmountVisible ? (
-          <EyeClosed color={'white'} size={16} />
-        ) : (
-          <Eye color={'white'} />
-        )}
-        <Text className="text-lg font-bold text-white text-center">
-          {isAmountVisible ? 'Hide' : 'Show'} amount
-        </Text>
-      </TouchableOpacity>
+      <TotalAmount />
       <FlatList
         contentContainerStyle={{
-          paddingBottom: 300,
+          paddingBottom: 400,
         }}
-        ListFooterComponent={() => (
-          <View>
-            <Text className="text-lg text-white text-center">
-              - End of transaction history -
-            </Text>
-          </View>
-        )}
         data={groupped}
         keyExtractor={(item) => item.date}
         initialNumToRender={1}
@@ -91,12 +74,27 @@ export const TransactionHistory = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         renderItem={({ item }) => (
-          <TranstionHistoryByGroup
-            date={item.date}
-            transactions={item.data}
-            isAmountVisible={isAmountVisible}
-          />
+          <TranstionHistoryByGroup date={item.date} transactions={item.data} />
         )}
+        ListFooterComponent={() =>
+          loading ? (
+            <ActivityIndicator size="large" color="white" className="mb-12" />
+          ) : (
+            hasMore && (
+              <TouchableOpacity
+                onPress={loadMoreData}
+                className={cn(
+                  buttonVariants({
+                    variant: 'default',
+                    size: 'default',
+                  })
+                )}
+              >
+                <Text className="text-white text-xl font-bold">Load more</Text>
+              </TouchableOpacity>
+            )
+          )
+        }
       />
     </View>
   );
@@ -106,12 +104,7 @@ const Unauthenticated = () => {
   return (
     <View className="bg-blue-600 min-h-screen flex items-center mt-12">
       <Text className="text-white text-4xl mb-8">You are not logged in.</Text>
-      <Link
-        href={'/(auth)'}
-        className="border border-white rounded-md px-12 py-4"
-      >
-        <Text className="text-white text-lg">Return to login screen</Text>
-      </Link>
+      <LinkButton href={'/(auth)'}>Return to login screen</LinkButton>
     </View>
   );
 };
