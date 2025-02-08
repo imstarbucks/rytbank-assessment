@@ -11,26 +11,29 @@ import {
 import { TransactionHistoryType } from '@/utils/types';
 import { transactionHistoryData } from '@/utils/const';
 import { TranstionHistoryByGroup } from './TransactionHistoryByGroup';
+import { useBiometricStore } from '@/store/useBiometricStore';
+import { useAuthenticationStore } from '@/store/useAuthenticationStore';
+import { Link } from 'expo-router';
 
 export const TransactionHistory = () => {
   const [isAmountVisible, setIsAmountVisible] = useState(false);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const isCompatible = useBiometricStore((state) => state.isCompatible);
+  const isAuthenticated = useAuthenticationStore(
+    (state) => state.isAuthenticated
+  );
 
   const groupped = groupTransactionsByDate(transactionHistoryData);
 
-  const checkBiometricSupport = async () => {
-    try {
-      const compatible = await LocalAuthentication.hasHardwareAsync();
-
-      setIsBiometricSupported(compatible);
-    } catch (error) {
-      console.error('Error during biometric authentication:', error);
-    }
-  };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   const handleAuthenticateUser = async () => {
-    if (isBiometricSupported) {
+    if (isCompatible) {
       const authenticate = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate to show transactions amount',
         fallbackLabel: 'Enter passcode',
@@ -44,16 +47,9 @@ export const TransactionHistory = () => {
     }
   };
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
-
-  useEffect(() => {
-    checkBiometricSupport();
-  }, []);
+  if (!isAuthenticated) {
+    return <Unauthenticated />;
+  }
 
   return (
     <View>
@@ -106,7 +102,20 @@ export const TransactionHistory = () => {
   );
 };
 
-// Group transaction by date
+const Unauthenticated = () => {
+  return (
+    <View className="bg-blue-600 min-h-screen flex items-center mt-12">
+      <Text className="text-white text-4xl mb-8">You are not logged in.</Text>
+      <Link
+        href={'/(auth)'}
+        className="border border-white rounded-md px-12 py-4"
+      >
+        <Text className="text-white text-lg">Return to login screen</Text>
+      </Link>
+    </View>
+  );
+};
+
 const groupTransactionsByDate = (transactions: TransactionHistoryType[]) => {
   const group = transactions.reduce((acc, transaction) => {
     if (!acc[transaction.date]) {
