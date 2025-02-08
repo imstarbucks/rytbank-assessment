@@ -5,7 +5,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { useBiometricStore } from '@/store/useBiometricStore';
 import { useAuthenticationStore } from '@/store/useAuthenticationStore';
 
-const TransactionHistoryScreen = () => {
+const LoginScreen = () => {
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const { isCompatible } = useBiometricStore((state) => state);
   const setIsCompatible = useBiometricStore((state) => state.setIsCompatible);
@@ -25,7 +25,6 @@ const TransactionHistoryScreen = () => {
         ]);
       }
 
-      console.log(compatible, 'Compatible');
       setIsCompatible(compatible);
     } catch (error) {
       setIsCompatible(false);
@@ -38,7 +37,6 @@ const TransactionHistoryScreen = () => {
   };
 
   const handleAuthenticateUser = async () => {
-    console.log(isCompatible, '2');
     if (isCompatible) {
       const authenticate = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate to show transactions amount',
@@ -51,7 +49,6 @@ const TransactionHistoryScreen = () => {
         return;
       }
 
-      console.log(authenticate.success, 'Auth');
       setIsAuthenticated(false);
     }
   };
@@ -83,4 +80,4 @@ const TransactionHistoryScreen = () => {
   );
 };
 
-export default TransactionHistoryScreen;
+export default LoginScreen;
