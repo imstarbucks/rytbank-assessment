@@ -16,6 +16,12 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="(transactions)/details/[id]"
+        options={{
+          title: 'Details',
+        }}
+      />
     </Stack>
   );
 }
