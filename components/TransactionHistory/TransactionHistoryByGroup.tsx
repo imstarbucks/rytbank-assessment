@@ -1,12 +1,6 @@
 import { TransactionHistoryType } from '@/lib/types';
-import { Link, useRouter } from 'expo-router';
-import {
-  FlatList,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface TranstionHistoryByGroupProps {
   date: string;
